@@ -1,0 +1,38 @@
+# Python bytecode/caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env
+
+# SQLite Database Files
+*.db
+*.sqlite3
+sales_platform.db
+test_sales_platform.db
+
+# User Uploaded Data (contains private datasets)
+uploads/
+!uploads/sample_sales_data.csv
+
+# IDE/Editor Configs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PredictaSales | Advanced Sales Forecasting & Analytics</title>
+    <meta name="description" content="Secure, high-performance sales forecasting platform with advanced time-series predictive modeling and interactive data analytics.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Chart.js and Zoom Plugins CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+</head>
+<body class="dark-theme">
+    <!-- App Container -->
+    <div id="app-root">
+        
+        <!-- ================= AUTHENTICATION CONTAINER ================= -->
+        <div id="auth-container" class="page-container auth-page">
+            <div class="auth-card-wrapper">
+                <!-- Branding -->
+                <div class="auth-brand">
+                    <svg class="brand-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 13.5L9 7.5L13.5 12L21 4.5" stroke="url(#logo-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 4.5H16.5M21 4.5V9" stroke="url(#logo-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 20H21" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="logo-grad" x1="3" y1="4.5" x2="21" y2="13.5" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#38bdf8"/>
+                                <stop offset="1" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>PredictaSales</h1>
+                    <p>Unlock the future of your revenue operations</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form-panel" class="auth-panel active">
+                    <h2>Welcome Back</h2>
+                    <p class="panel-subtitle">Access your forecasting dashboard</p>
+                    <form id="login-form" autocomplete="on">
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="text" id="login-username" name="username" required placeholder="Enter username" autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" required placeholder="Enter password" autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btn-login-submit">
+                            <span>Sign In</span>
+                            <span class="btn-loader hidden"></span>
+                        </button>
+                    </form>
+                    <p class="auth-toggle-text">Don't have an account? <a href="#" id="link-to-register">Create Account</a></p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form-panel" class="auth-panel">
+                    <h2>Create Account</h2>
+                    <p class="panel-subtitle">Start forecasting sales in minutes</p>
+                    <form id="register-form" autocomplete="on">
+                        <div class="form-group">
+                            <label for="register-username">Username</label>
+                            <input type="text" id="register-username" name="username" required placeholder="Choose a username" autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" name="password" required placeholder="Create password" autocomplete="new-password">
+                            <div class="password-strength-container">
+                                <div class="strength-bar-bg"><div id="strength-bar" class="strength-bar"></div></div>
+                                <span id="strength-label">Password Strength</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btn-register-submit">
+                            <span>Register & Get Started</span>
+                            <span class="btn-loader hidden"></span>
+                        </button>
+                    </form>
+                    <p class="auth-toggle-text">Already registered? <a href="#" id="link-to-login">Sign In</a></p>
+                </div>
+
+                <div id="auth-alert" class="alert error hidden">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-text" id="auth-alert-message">Invalid credentials.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MAIN DASHBOARD CONTAINER ================= -->
+        <div id="dashboard-container" class="page-container dashboard-page hidden">
+            
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <svg class="brand-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 13.5L9 7.5L13.5 12L21 4.5" stroke="url(#logo-grad-side)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 4.5H16.5M21 4.5V9" stroke="url(#logo-grad-side)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 20H21" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="logo-grad-side" x1="3" y1="4.5" x2="21" y2="13.5" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#38bdf8"/>
+                                <stop offset="1" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="sidebar-title">PredictaSales</span>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <div class="nav-item active" id="nav-dashboard">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
+                        <span>Dashboard</span>
+                    </div>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="user-avatar-initials">U</div>
+                        <div class="user-details">
+                            <span class="username-label" id="sidebar-username">Username</span>
+                            <span class="user-role">Forecaster</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-icon btn-logout" id="btn-logout" title="Log Out">
+                        <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Panel Content -->
+            <main class="main-content">
+                <!-- Top Navbar -->
+                <header class="top-nav">
+                    <div class="top-nav-left">
+                        <h1>Sales Forecasting Command Center</h1>
+                        <p class="text-muted">Upload sales datasets, run statistical models, and download accurate projections.</p>
+                    </div>
+                    <div class="top-nav-right flex-align-center">
+                        <button class="btn btn-glass btn-sm mr-3 hidden" id="btn-print-report">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-12 0v5h8v-5M18 14h.01"/>
+                            </svg>
+                            <span>Generate PDF Report</span>
+                        </button>
+                        <div id="active-file-badge" class="badge warning-badge">
+                            <span class="badge-dot"></span>
+                            <span id="active-file-text">No active dataset</span>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="dashboard-scrollable-content" id="print-area">
+                    
+                    <!-- 1. DATA UPLOAD ZONE -->
+                    <section class="dashboard-section" id="upload-section">
+                        <div class="card glass-card upload-card">
+                            <div class="upload-split">
+                                <div class="upload-zone-wrapper">
+                                    <div class="upload-zone" id="upload-dropzone">
+                                        <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="hidden">
+                                        <div class="upload-zone-content">
+                                            <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M12 16V8m0 0l-3 3m3-3l3 3M21 12a9 9 0 01-9 9 9 9 0 01-9-9 9 9 0 019-9 9 9 0 019 9z"/>
+                                            </svg>
+                                            <h3>Drag & Drop Sales Data</h3>
+                                            <p class="upload-sub">Supports CSV, Excel (.xlsx, .xls) up to 16MB</p>
+                                            <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-files">Browse Local Files</button>
+                                        </div>
+                                        
+                                        <!-- Active Upload Progress -->
+                                        <div class="upload-progress-wrapper hidden" id="upload-progress-container">
+                                            <div class="spinner"></div>
+                                            <span class="upload-progress-text">Processing and validating dataset columns...</span>
+                                            <div class="progress-bar-bg"><div class="progress-bar-fill" id="upload-progress-bar"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="upload-info">
+                                    <h3>Getting Started</h3>
+                                    <p>Your data file must contain at least two primary columns for forecasting:</p>
+                                    <ul class="requirements-list">
+                                        <li>
+                                            <strong>Date/Time Index</strong>: Auto-detects columns like "Date", "Month", "Period", etc.
+                                        </li>
+                                        <li>
+                                            <strong>Sales Value</strong>: Auto-detects numeric columns like "Sales", "Revenue", "Amount", etc.
+                                        </li>
+                                        <li>
+                                            <strong>Category Filter (Optional)</strong>: Automatically extracts categories if a "Product Category" or similar column is detected.
+                                        </li>
+                                    </ul>
+                                    <div class="sample-actions">
+                                        <p>Don't have a dataset ready? Download our multi-category sample sales data:</p>
+                                        <a href="/api/sample" class="btn btn-glass btn-sm" id="btn-download-sample" download>
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                            <span>Download Sample CSV (3 Categories)</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- File Error Message -->
+                            <div id="upload-error" class="alert error mt-3 hidden">
+                                <div class="alert-icon">⚠️</div>
+                                <div class="alert-text" id="upload-error-message">Error processing file structure.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. ANALYTICS WORKSPACE (Revealed upon data upload) -->
+                    <div id="analytics-workspace" class="hidden">
+                        
+                        <!-- Dataset Summary Info Cards -->
+                        <div class="metrics-grid">
+                            <!-- Card 1: Total Sales -->
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Historical Sum</span>
+                                    <h2 class="metric-val" id="metric-total-sales">$0.00</h2>
+                                </div>
+                                <div class="metric-badge positive-badge" id="badge-total-sales-lbl">
+                                    <span>Historical</span>
+                                </div>
+                            </div>
+                            <!-- Card 2: Average Monthly -->
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Monthly Average</span>
+                                    <h2 class="metric-val" id="metric-avg-sales">$0.00</h2>
+                                </div>
+                                <div class="metric-badge neutral-badge" id="metric-datapoints-count">
+                                    <span>0 Months</span>
+                                </div>
+                            </div>
+                            <!-- Card 3: Model Fit R-squared -->
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Model Reliability (R²)</span>
+                                    <h2 class="metric-val" id="metric-r2">0.00</h2>
+                                </div>
+                                <div class="metric-badge" id="badge-r2-status">
+                                    <span>N/A</span>
+                                </div>
+                            </div>
+                            <!-- Card 4: Growth Forecast -->
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Projected Trend</span>
+                                    <h2 class="metric-val" id="metric-growth">0.0%</h2>
+                                </div>
+                                <div class="metric-badge" id="badge-growth-status">
+                                    <span>0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Visualization Card & Config -->
+                        <section class="dashboard-section" id="chart-section">
+                            <div class="card glass-card chart-card">
+                                <div class="chart-header">
+                                    <div class="chart-header-left">
+                                        <h2>Interactive Forecast Model</h2>
+                                        <p class="text-muted">Use mouse wheel or pinch gestures to zoom the timeline. Drag to pan left/right. Double click graph to reset zoom.</p>
+                                    </div>
+                                    <div class="chart-header-right">
+                                        <!-- Forecast Parameters Form -->
+                                        <div class="forecast-controls">
+                                            <!-- Dynamic Category Filter Dropdown -->
+                                            <div class="control-group hidden" id="control-group-category">
+                                                <label for="param-category">Product Category</label>
+                                                <select id="param-category" class="form-select">
+                                                    <option value="All">All Categories</option>
+                                                </select>
+                                            </div>
+                                            <div class="control-group">
+                                                <label for="param-model-type">Model Algorithm</label>
+                                                <select id="param-model-type" class="form-select">
+                                                    <option value="linear">Linear Regression (Trend)</option>
+                                                    <option value="moving_average">Moving Average (Smoothing)</option>
+                                                    <option value="exponential_smoothing" selected>Holt's Linear Smoothing</option>
+                                                </select>
+                                            </div>
+                                            <div class="control-group">
+                                                <label for="param-horizon">Horizon</label>
+                                                <select id="param-horizon" class="form-select width-sm">
+                                                    <option value="3">3 Months</option>
+                                                    <option value="6" selected>6 Months</option>
+                                                    <option value="12">12 Months</option>
+                                                    <option value="24">24 Months</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chart Canvas Container -->
+                                <div class="chart-canvas-container">
+                                    <canvas id="sales-forecast-chart"></canvas>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Double Column Layout for Insights & Table -->
+                        <div class="dashboard-split-grid">
+                            
+                            <!-- Left: Core Predictive Insights -->
+                            <section class="dashboard-section" id="insights-section">
+                                <div class="card glass-card height-full">
+                                    <div class="card-header">
+                                        <h2>Model-Generated Insights</h2>
+                                        <p class="text-muted">Time-series diagnostic analysis and automatically flagged outlier anomalies.</p>
+                                    </div>
+                                    <div class="insights-container" id="insights-list">
+                                        <div class="insight-block">
+                                            <div class="insight-status-dot"></div>
+                                            <div>
+                                                <h4>Analyzing Dataset...</h4>
+                                                <p>Waiting for model output validation.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Right: Predictions Data Grid -->
+                            <section class="dashboard-section" id="table-section">
+                                <div class="card glass-card height-full">
+                                    <div class="card-header flex-header">
+                                        <div>
+                                            <h2>Projections Data Table</h2>
+                                            <p class="text-muted">Raw values and calculated prediction margins.</p>
+                                        </div>
+                                        <button class="btn btn-secondary btn-sm" id="btn-export-forecast">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"/></svg>
+                                            <span>Export Projections CSV</span>
+                                        </button>
+                                    </div>
+                                    <div class="table-container">
+                                        <table id="projections-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Period (Month)</th>
+                                                    <th>Type</th>
+                                                    <th>Amount</th>
+                                                    <th>95% Margin (Low - High)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="projections-table-body">
+                                                <!-- Dynamic rows -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-pagination">
+                                        <span class="pagination-info" id="table-pagination-info">Showing 1-10 of 42 entries</span>
+                                        <div class="pagination-controls">
+                                            <button class="btn btn-icon btn-xs" id="btn-prev-page" disabled>&larr;</button>
+                                            <button class="btn btn-icon btn-xs" id="btn-next-page">&rarr;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                        </div>
+
+                    </div>
+                    
+                </div>
+            </main>
+
+        </div>
+        
+    </div>
+
+    <!-- Main Frontend Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
