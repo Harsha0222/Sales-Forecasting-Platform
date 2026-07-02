@@ -1343,3 +1343,23 @@ body.light-theme .alert.error .alert-text {
     color: #f43f5e !important;
 }
 
+/* Home Split Grid Styles */
+.home-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 32px;
+    align-items: stretch;
+}
+.home-split-grid .glass-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+@media (max-width: 1200px) {
+    .home-split-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+
