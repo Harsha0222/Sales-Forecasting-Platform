@@ -456,6 +456,7 @@ a:hover {
 .dashboard-page {
     flex-direction: row;
     overflow: hidden;
+    height: 100vh;
 }
 
 /* Left Sidebar styling */
@@ -469,6 +470,8 @@ a:hover {
     flex-direction: column;
     flex-shrink: 0;
     z-index: 10;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .sidebar-header {
@@ -589,7 +592,7 @@ a:hover {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
 }
 
