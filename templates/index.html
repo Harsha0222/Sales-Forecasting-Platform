@@ -114,14 +114,22 @@
                 </div>
                 
                 <nav class="sidebar-nav">
-                    <div class="nav-item active" id="nav-dashboard">
+                    <div class="nav-item active" id="nav-home">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <span>Home</span>
+                    </div>
+                    <div class="nav-item" id="nav-dashboard">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"/></svg>
-                        <span>Dashboard</span>
+                        <span>Sales Forecaster</span>
+                    </div>
+                    <div class="nav-item" id="nav-profile">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <span>User Profile</span>
                     </div>
                 </nav>
 
                 <div class="sidebar-footer">
-                    <div class="user-profile">
+                    <div class="user-profile" id="sidebar-profile-card" style="cursor: pointer;">
                         <div class="user-avatar" id="user-avatar-initials">U</div>
                         <div class="user-details">
                             <span class="username-label" id="sidebar-username">Username</span>
@@ -133,6 +141,7 @@
                         <span>Sign Out</span>
                     </button>
                 </div>
+
             </aside>
 
             <!-- Main Panel Content -->
@@ -140,240 +149,362 @@
                 <!-- Top Navbar -->
                 <header class="top-nav">
                     <div class="top-nav-left">
-                        <h1>Sales Forecasting Command Center</h1>
-                        <p class="text-muted">Upload sales datasets, run statistical models, and download accurate projections.</p>
+                        <h1 id="page-title-label">Home Dashboard</h1>
+                        <p class="text-muted" id="page-subtitle-label">Welcome to your sales forecasting command center.</p>
                     </div>
                     <div class="top-nav-right flex-align-center">
+                        <button class="btn btn-icon btn-glass mr-3" id="btn-theme-toggle" title="Toggle Light/Dark Theme">
+                            <svg class="theme-icon-sun hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                                <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                            <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                            </svg>
+                        </button>
                         <button class="btn btn-glass btn-sm mr-3 hidden" id="btn-print-report">
                             <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-12 0v5h8v-5M18 14h.01"/>
                             </svg>
                             <span>Generate PDF Report</span>
                         </button>
-                        <div id="active-file-badge" class="badge warning-badge">
+                        <div id="active-file-badge" class="badge warning-badge hidden">
                             <span class="badge-dot"></span>
                             <span id="active-file-text">No active dataset</span>
                         </div>
                     </div>
-                </header>
-
-                <div class="dashboard-scrollable-content" id="print-area">
+                </header                <div class="dashboard-scrollable-content" id="print-area">
                     
-                    <!-- 1. DATA UPLOAD ZONE -->
-                    <section class="dashboard-section" id="upload-section">
-                        <div class="card glass-card upload-card">
-                            <div class="upload-split">
-                                <div class="upload-zone-wrapper">
-                                    <div class="upload-zone" id="upload-dropzone">
-                                        <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="hidden">
-                                        <div class="upload-zone-content">
-                                            <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M12 16V8m0 0l-3 3m3-3l3 3M21 12a9 9 0 01-9 9 9 9 0 01-9-9 9 9 0 019-9 9 9 0 019 9z"/>
-                                            </svg>
-                                            <h3>Drag & Drop Sales Data</h3>
-                                            <p class="upload-sub">Supports CSV, Excel (.xlsx, .xls) up to 16MB</p>
-                                            <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-files">Browse Local Files</button>
-                                        </div>
-                                        
-                                        <!-- Active Upload Progress -->
-                                        <div class="upload-progress-wrapper hidden" id="upload-progress-container">
-                                            <div class="spinner"></div>
-                                            <span class="upload-progress-text">Processing and validating dataset columns...</span>
-                                            <div class="progress-bar-bg"><div class="progress-bar-fill" id="upload-progress-bar"></div></div>
-                                        </div>
-                                    </div>
+                    <!-- ================= 1. HOME VIEW ================= -->
+                    <div id="subview-home" class="subview-pane">
+                        <div class="welcome-banner card glass-card mb-4">
+                            <h2>Welcome back, <span class="username-display" style="color: var(--color-primary); font-weight: 700;">User</span>!</h2>
+                            <p class="text-muted">You are logged into the Sales Forecasting Command Center. Select a previously analyzed dataset below or proceed to the Forecaster tab to upload a new file.</p>
+                        </div>
+                        
+                        <div class="metrics-grid mb-4">
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Datasets Analyzed</span>
+                                    <h2 class="metric-val" id="home-stat-uploads">0</h2>
                                 </div>
-                                <div class="upload-info">
-                                    <h3>Getting Started</h3>
-                                    <p>Your data file must contain at least two primary columns for forecasting:</p>
-                                    <ul class="requirements-list">
-                                        <li>
-                                            <strong>Date/Time Index</strong>: Auto-detects columns like "Date", "Month", "Period", etc.
-                                        </li>
-                                        <li>
-                                            <strong>Sales Value</strong>: Auto-detects numeric columns like "Sales", "Revenue", "Amount", etc.
-                                        </li>
-                                        <li>
-                                            <strong>Category Filter (Optional)</strong>: Automatically extracts categories if a "Product Category" or similar column is detected.
-                                        </li>
-                                    </ul>
-                                    <div class="sample-actions">
-                                        <p>Don't have a dataset ready? Download our multi-category sample sales data:</p>
-                                        <a href="/api/sample" class="btn btn-glass btn-sm" id="btn-download-sample" download>
-                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                            <span>Download Sample CSV (3 Categories)</span>
-                                        </a>
-                                    </div>
+                                <div class="metric-badge positive-badge">
+                                    <span>Database Synced</span>
+                                </div>
+                            </div>
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Active Database Mode</span>
+                                    <h2 class="metric-val" id="home-stat-db" style="font-size: 1.15rem; margin-top: 8px;">SQLite (Local)</h2>
+                                </div>
+                                <div class="metric-badge neutral-badge">
+                                    <span>Active</span>
+                                </div>
+                            </div>
+                            <div class="card glass-card metric-card">
+                                <div class="metric-info">
+                                    <span class="metric-label">Cryptographic Protection</span>
+                                    <h2 class="metric-val" style="font-size: 1.15rem; margin-top: 8px;">PBKDF2 SHA-256</h2>
+                                </div>
+                                <div class="metric-badge positive-badge">
+                                    <span>600k Rounds</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-split-grid">
+                            <div class="card glass-card" style="height: fit-content; margin-bottom: 24px;">
+                                <div class="card-header mb-3">
+                                    <h2>Quick Shortcuts</h2>
+                                    <p class="text-muted">Common actions to get started with forecasting.</p>
+                                </div>
+                                <div class="quick-actions-list" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <button class="btn btn-primary w-full" id="btn-goto-forecaster">
+                                        <span>Go to Sales Forecaster</span>
+                                    </button>
+                                    <a href="/api/sample" class="btn btn-secondary w-full text-center" style="display: block; line-height: 24px;" download>
+                                        <span>Download Demo Sales Sheet</span>
+                                    </a>
                                 </div>
                             </div>
                             
-                            <!-- File Error Message -->
-                            <div id="upload-error" class="alert error mt-3 hidden">
-                                <div class="alert-icon">⚠️</div>
-                                <div class="alert-text" id="upload-error-message">Error processing file structure.</div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- 2. ANALYTICS WORKSPACE (Revealed upon data upload) -->
-                    <div id="analytics-workspace" class="hidden">
-                        
-                        <!-- Dataset Summary Info Cards -->
-                        <div class="metrics-grid">
-                            <!-- Card 1: Total Sales -->
-                            <div class="card glass-card metric-card">
-                                <div class="metric-info">
-                                    <span class="metric-label">Historical Sum</span>
-                                    <h2 class="metric-val" id="metric-total-sales">$0.00</h2>
+                            <div class="card glass-card" style="height: fit-content; margin-bottom: 24px;">
+                                <div class="card-header mb-3">
+                                    <h2>Recent Upload History</h2>
+                                    <p class="text-muted">Click any past file to load it directly into the analytics canvas.</p>
                                 </div>
-                                <div class="metric-badge positive-badge" id="badge-total-sales-lbl">
-                                    <span>Historical</span>
-                                </div>
-                            </div>
-                            <!-- Card 2: Average Monthly -->
-                            <div class="card glass-card metric-card">
-                                <div class="metric-info">
-                                    <span class="metric-label">Monthly Average</span>
-                                    <h2 class="metric-val" id="metric-avg-sales">$0.00</h2>
-                                </div>
-                                <div class="metric-badge neutral-badge" id="metric-datapoints-count">
-                                    <span>0 Months</span>
-                                </div>
-                            </div>
-                            <!-- Card 3: Model Fit R-squared -->
-                            <div class="card glass-card metric-card">
-                                <div class="metric-info">
-                                    <span class="metric-label">Model Reliability (R²)</span>
-                                    <h2 class="metric-val" id="metric-r2">0.00</h2>
-                                </div>
-                                <div class="metric-badge" id="badge-r2-status">
-                                    <span>N/A</span>
-                                </div>
-                            </div>
-                            <!-- Card 4: Growth Forecast -->
-                            <div class="card glass-card metric-card">
-                                <div class="metric-info">
-                                    <span class="metric-label">Projected Trend</span>
-                                    <h2 class="metric-val" id="metric-growth">0.0%</h2>
-                                </div>
-                                <div class="metric-badge" id="badge-growth-status">
-                                    <span>0.0%</span>
+                                <div class="recent-uploads-list" id="home-recent-uploads" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <p class="text-muted text-center py-4">Checking upload database logs...</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Main Visualization Card & Config -->
-                        <section class="dashboard-section" id="chart-section">
-                            <div class="card glass-card chart-card">
-                                <div class="chart-header">
-                                    <div class="chart-header-left">
-                                        <h2>Interactive Forecast Model</h2>
-                                        <p class="text-muted">Use mouse wheel or pinch gestures to zoom the timeline. Drag to pan left/right. Double click graph to reset zoom.</p>
-                                    </div>
-                                    <div class="chart-header-right">
-                                        <!-- Forecast Parameters Form -->
-                                        <div class="forecast-controls">
-                                            <!-- Dynamic Category Filter Dropdown -->
-                                            <div class="control-group hidden" id="control-group-category">
-                                                <label for="param-category">Product Category</label>
-                                                <select id="param-category" class="form-select">
-                                                    <option value="All">All Categories</option>
-                                                </select>
+                    <!-- ================= 2. FORECASTER VIEW ================= -->
+                    <div id="subview-forecaster" class="subview-pane hidden">
+                        <!-- 1. DATA UPLOAD ZONE -->
+                        <section class="dashboard-section" id="upload-section">
+                            <div class="card glass-card upload-card">
+                                <div class="upload-split">
+                                    <div class="upload-zone-wrapper">
+                                        <div class="upload-zone" id="upload-dropzone">
+                                            <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="hidden">
+                                            <div class="upload-zone-content">
+                                                <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M12 16V8m0 0l-3 3m3-3l3 3M21 12a9 9 0 01-9 9 9 9 0 01-9-9 9 9 0 019-9 9 9 0 019 9z"/>
+                                                </svg>
+                                                <h3>Drag & Drop Sales Data</h3>
+                                                <p class="upload-sub">Supports CSV, Excel (.xlsx, .xls) up to 16MB</p>
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-files">Browse Local Files</button>
                                             </div>
-                                            <div class="control-group">
-                                                <label for="param-model-type">Model Algorithm</label>
-                                                <select id="param-model-type" class="form-select">
-                                                    <option value="linear">Linear Regression (Trend)</option>
-                                                    <option value="moving_average">Moving Average (Smoothing)</option>
-                                                    <option value="exponential_smoothing" selected>Holt's Linear Smoothing</option>
-                                                </select>
-                                            </div>
-                                            <div class="control-group">
-                                                <label for="param-horizon">Horizon</label>
-                                                <select id="param-horizon" class="form-select width-sm">
-                                                    <option value="3">3 Months</option>
-                                                    <option value="6" selected>6 Months</option>
-                                                    <option value="12">12 Months</option>
-                                                    <option value="24">24 Months</option>
-                                                </select>
+                                            
+                                            <!-- Active Upload Progress -->
+                                            <div class="upload-progress-wrapper hidden" id="upload-progress-container">
+                                                <div class="spinner"></div>
+                                                <span class="upload-progress-text">Processing and validating dataset columns...</span>
+                                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="upload-progress-bar"></div></div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="upload-info">
+                                        <h3>Getting Started</h3>
+                                        <p>Your data file must contain at least two primary columns for forecasting:</p>
+                                        <ul class="requirements-list">
+                                            <li>
+                                                <strong>Date/Time Index</strong>: Auto-detects columns like "Date", "Month", "Period", etc.
+                                            </li>
+                                            <li>
+                                                <strong>Sales Value</strong>: Auto-detects numeric columns like "Sales", "Revenue", "Amount", etc.
+                                            </li>
+                                            <li>
+                                                <strong>Category Filter (Optional)</strong>: Automatically extracts categories if a "Product Category" or similar column is detected.
+                                            </li>
+                                        </ul>
+                                        <div class="sample-actions">
+                                            <p>Don't have a dataset ready? Download our sample sales data:</p>
+                                            <a href="/api/sample" class="btn btn-glass btn-sm" id="btn-download-sample" download>
+                                                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                <span>Download Sample CSV (3 Categories)</span>
+                                            </a>
+                                        </div>
+                                        <div class="history-actions mt-4" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+                                            <p><strong>Or load a previously uploaded file:</strong></p>
+                                            <select id="history-file-select" class="form-select w-full mt-2" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px; border-radius: 8px;">
+                                                <option value="">-- Select a past file --</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <!-- Chart Canvas Container -->
-                                <div class="chart-canvas-container">
-                                    <canvas id="sales-forecast-chart"></canvas>
+                                
+                                <!-- File Error Message -->
+                                <div id="upload-error" class="alert error mt-3 hidden">
+                                    <div class="alert-icon">⚠️</div>
+                                    <div class="alert-text" id="upload-error-message">Error processing file structure.</div>
                                 </div>
                             </div>
                         </section>
 
-                        <!-- Double Column Layout for Insights & Table -->
-                        <div class="dashboard-split-grid">
+                        <!-- 2. ANALYTICS WORKSPACE (Revealed upon data upload) -->
+                        <div id="analytics-workspace" class="hidden">
                             
-                            <!-- Left: Core Predictive Insights -->
-                            <section class="dashboard-section" id="insights-section">
-                                <div class="card glass-card height-full">
-                                    <div class="card-header">
-                                        <h2>Model-Generated Insights</h2>
-                                        <p class="text-muted">Time-series diagnostic analysis and automatically flagged outlier anomalies.</p>
+                            <!-- Dataset Summary Info Cards -->
+                            <div class="metrics-grid">
+                                <!-- Card 1: Total Sales -->
+                                <div class="card glass-card metric-card">
+                                    <div class="metric-info">
+                                        <span class="metric-label">Historical Sum</span>
+                                        <h2 class="metric-val" id="metric-total-sales">$0.00</h2>
                                     </div>
-                                    <div class="insights-container" id="insights-list">
-                                        <div class="insight-block">
-                                            <div class="insight-status-dot"></div>
-                                            <div>
-                                                <h4>Analyzing Dataset...</h4>
-                                                <p>Waiting for model output validation.</p>
+                                    <div class="metric-badge positive-badge" id="badge-total-sales-lbl">
+                                        <span>Historical</span>
+                                    </div>
+                                </div>
+                                <!-- Card 2: Average Monthly -->
+                                <div class="card glass-card metric-card">
+                                    <div class="metric-info">
+                                        <span class="metric-label">Monthly Average</span>
+                                        <h2 class="metric-val" id="metric-avg-sales">$0.00</h2>
+                                    </div>
+                                    <div class="metric-badge neutral-badge" id="metric-datapoints-count">
+                                        <span>0 Months</span>
+                                    </div>
+                                </div>
+                                <!-- Card 3: Model Fit R-squared -->
+                                <div class="card glass-card metric-card">
+                                    <div class="metric-info">
+                                        <span class="metric-label">Model Reliability (R²)</span>
+                                        <h2 class="metric-val" id="metric-r2">0.00</h2>
+                                    </div>
+                                    <div class="metric-badge" id="badge-r2-status">
+                                        <span>N/A</span>
+                                    </div>
+                                </div>
+                                <!-- Card 4: Growth Forecast -->
+                                <div class="card glass-card metric-card">
+                                    <div class="metric-info">
+                                        <span class="metric-label">Projected Trend</span>
+                                        <h2 class="metric-val" id="metric-growth">0.0%</h2>
+                                    </div>
+                                    <div class="metric-badge" id="badge-growth-status">
+                                        <span>0.0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Main Visualization Card & Config -->
+                            <section class="dashboard-section" id="chart-section">
+                                <div class="card glass-card chart-card">
+                                    <div class="chart-header">
+                                        <div class="chart-header-left">
+                                            <h2>Interactive Forecast Model</h2>
+                                            <p class="text-muted">Use mouse wheel or pinch gestures to zoom the timeline. Drag to pan left/right. Double click graph to reset zoom.</p>
+                                        </div>
+                                        <div class="chart-header-right">
+                                            <!-- Forecast Parameters Form -->
+                                            <div class="forecast-controls">
+                                                <!-- Dynamic Category Filter Dropdown -->
+                                                <div class="control-group hidden" id="control-group-category">
+                                                    <label for="param-category">Product Category</label>
+                                                    <select id="param-category" class="form-select">
+                                                        <option value="All">All Categories</option>
+                                                    </select>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="param-model-type">Model Algorithm</label>
+                                                    <select id="param-model-type" class="form-select">
+                                                        <option value="linear">Linear Regression (Trend)</option>
+                                                        <option value="moving_average">Moving Average (Smoothing)</option>
+                                                        <option value="exponential_smoothing" selected>Holt's Linear Smoothing</option>
+                                                    </select>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="param-horizon">Horizon</label>
+                                                    <select id="param-horizon" class="form-select width-sm">
+                                                        <option value="3">3 Months</option>
+                                                        <option value="6" selected>6 Months</option>
+                                                        <option value="12">12 Months</option>
+                                                        <option value="24">24 Months</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </section>
 
-                            <!-- Right: Predictions Data Grid -->
-                            <section class="dashboard-section" id="table-section">
-                                <div class="card glass-card height-full">
-                                    <div class="card-header flex-header">
-                                        <div>
-                                            <h2>Projections Data Table</h2>
-                                            <p class="text-muted">Raw values and calculated prediction margins.</p>
-                                        </div>
-                                        <button class="btn btn-secondary btn-sm" id="btn-export-forecast">
-                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"/></svg>
-                                            <span>Export Projections CSV</span>
-                                        </button>
-                                    </div>
-                                    <div class="table-container">
-                                        <table id="projections-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Period (Month)</th>
-                                                    <th>Type</th>
-                                                    <th>Amount</th>
-                                                    <th>95% Margin (Low - High)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="projections-table-body">
-                                                <!-- Dynamic rows -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-pagination">
-                                        <span class="pagination-info" id="table-pagination-info">Showing 1-10 of 42 entries</span>
-                                        <div class="pagination-controls">
-                                            <button class="btn btn-icon btn-xs" id="btn-prev-page" disabled>&larr;</button>
-                                            <button class="btn btn-icon btn-xs" id="btn-next-page">&rarr;</button>
-                                        </div>
+                                    <!-- Chart Canvas Container -->
+                                    <div class="chart-canvas-container">
+                                        <canvas id="sales-forecast-chart"></canvas>
                                     </div>
                                 </div>
                             </section>
 
+                            <!-- Double Column Layout for Insights & Table -->
+                            <div class="dashboard-split-grid">
+                                
+                                <!-- Left: Core Predictive Insights -->
+                                <section class="dashboard-section" id="insights-section">
+                                    <div class="card glass-card height-full">
+                                        <div class="card-header">
+                                            <h2>Model-Generated Insights</h2>
+                                            <p class="text-muted">Time-series diagnostic analysis and automatically flagged outlier anomalies.</p>
+                                        </div>
+                                        <div class="insights-container" id="insights-list">
+                                            <div class="insight-block">
+                                                <div class="insight-status-dot"></div>
+                                                <div>
+                                                    <h4>Analyzing Dataset...</h4>
+                                                    <p>Waiting for model output validation.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Right: Predictions Data Grid -->
+                                <section class="dashboard-section" id="table-section">
+                                    <div class="card glass-card height-full">
+                                        <div class="card-header flex-header">
+                                            <div>
+                                                <h2>Projections Data Table</h2>
+                                                <p class="text-muted">Raw values and calculated prediction margins.</p>
+                                            </div>
+                                            <button class="btn btn-secondary btn-sm" id="btn-export-forecast">
+                                                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"/></svg>
+                                                <span>Export Projections CSV</span>
+                                            </button>
+                                        </div>
+                                        <div class="table-container">
+                                            <table id="projections-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Period (Month)</th>
+                                                        <th>Type</th>
+                                                        <th>Amount</th>
+                                                        <th>95% Margin (Low - High)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="projections-table-body">
+                                                    <!-- Dynamic rows -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="table-pagination">
+                                            <span class="pagination-info" id="table-pagination-info">Showing 1-10 of 42 entries</span>
+                                            <div class="pagination-controls">
+                                                <button class="btn btn-icon btn-xs" id="btn-prev-page" disabled>&larr;</button>
+                                                <button class="btn btn-icon btn-xs" id="btn-next-page">&rarr;</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                            </div>
                         </div>
+                    </div>
 
+                    <!-- ================= 3. PROFILE VIEW ================= -->
+                    <div id="subview-profile" class="subview-pane hidden">
+                        <div class="dashboard-split-grid">
+                            <div class="card glass-card text-center" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; height: fit-content; margin-bottom: 24px;">
+                                <div class="user-avatar" id="profile-avatar-big" style="width: 80px; height: 80px; font-size: 2.2rem; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #0b0f19; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 8px 32px rgba(56, 189, 248, 0.2);">U</div>
+                                <h2 id="profile-username-val" style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Username</h2>
+                                <p class="text-muted" style="margin-bottom: 20px;">Data Forecaster Specialist</p>
+                                <div class="profile-meta" style="display: flex; gap: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; width: 100%; justify-content: space-around;">
+                                    <div>
+                                        <span class="text-muted" style="display: block; font-size: 0.75rem;">MEMBER SINCE</span>
+                                        <strong id="profile-member-since" style="color: var(--text-primary); font-size: 0.95rem;">N/A</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted" style="display: block; font-size: 0.75rem;">ACCOUNT STATUS</span>
+                                        <strong class="text-success" style="color: #10b981; font-size: 0.95rem;">Active & Verified</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card glass-card" style="height: fit-content; margin-bottom: 24px;">
+                                <div class="card-header mb-4">
+                                    <h2>Account Logs & Database Info</h2>
+                                    <p class="text-muted">Real-time system environment metrics.</p>
+                                </div>
+                                <div class="profile-stats-list" style="display: flex; flex-direction: column; gap: 16px;">
+                                    <div class="profile-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                                        <span class="text-muted">Storage Layer Mode</span>
+                                        <strong id="profile-stat-db-type" style="color: var(--color-primary);">SQLite (Local)</strong>
+                                    </div>
+                                    <div class="profile-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                                        <span class="text-muted">Total Files Stored</span>
+                                        <strong id="profile-stat-total-uploads" style="color: var(--text-primary);">0</strong>
+                                    </div>
+                                    <div class="profile-stat-row" style="display: flex; justify-content: space-between; padding-bottom: 4px;">
+                                        <span class="text-muted">Last Activity Time</span>
+                                        <strong id="profile-stat-last-upload" style="color: var(--text-primary);">N/A</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                 </div>
             </main>
+  </main>
 
         </div>
         

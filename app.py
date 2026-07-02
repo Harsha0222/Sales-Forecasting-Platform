@@ -124,6 +124,9 @@ def upload_file():
         session['current_file_path'] = filepath
         session['current_filename'] = filename
         
+        # Log successful upload into database
+        db.add_upload_record(user_id, filename)
+        
         y_vals = parsed_df['y'].values
         summary = {
             'data_points': len(parsed_df),
@@ -172,13 +175,72 @@ def forecast():
     except Exception as e:
         return jsonify({'error': f'Forecasting error: {str(e)}'}), 500
 
+@app.route('/api/uploads', methods=['GET'])
+def list_uploads():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized.'}), 401
+    history = db.get_user_uploads(session['user_id'])
+    return jsonify({'uploads': history}), 200
+
+@app.route('/api/uploads/load', methods=['POST'])
+def load_upload():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized.'}), 401
+    
+    data = request.get_json() or {}
+    filename = data.get('filename')
+    if not filename:
+        return jsonify({'error': 'Filename is required.'}), 400
+        
+    user_id = session['user_id']
+    user_upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(user_id))
+    filepath = os.path.join(user_upload_dir, secure_filename(filename))
+    
+    if not os.path.exists(filepath):
+        return jsonify({'error': 'File not found on server.'}), 404
+        
+    try:
+        parsed_df, col_info = forecaster.parse_sales_data(filepath)
+        
+        session['current_file_path'] = filepath
+        session['current_filename'] = filename
+        
+        y_vals = parsed_df['y'].values
+        summary = {
+            'data_points': len(parsed_df),
+            'min_date': parsed_df['ds'].min().strftime('%Y-%m-%d'),
+            'max_date': parsed_df['ds'].max().strftime('%Y-%m-%d'),
+            'total_sales': float(y_vals.sum()),
+            'avg_sales': float(y_vals.mean()),
+            'detected_date_col': col_info['date_col'],
+            'detected_sales_col': col_info['sales_col'],
+            'detected_category_col': col_info['category_col'],
+            'categories': col_info['categories']
+        }
+        
+        return jsonify({
+            'message': f'File {filename} loaded successfully!',
+            'filename': filename,
+            'summary': summary
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to parse file: {str(e)}'}), 420
+
+@app.route('/api/profile', methods=['GET'])
+def user_profile():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized.'}), 401
+    stats = db.get_user_stats(session['user_id'])
+    stats['database_type'] = 'PostgreSQL (Cloud)' if os.environ.get('DATABASE_URL') else 'SQLite (Local)'
+    return jsonify(stats), 200
+
 @app.route('/api/sample', methods=['GET'])
 def download_sample():
     """Generates and serves a realistic synthetic multi-category sales dataset for demo purposes."""
     sample_path = os.path.join(app.config['UPLOAD_FOLDER'], 'sample_sales_data.csv')
     
     # Re-generate data to ensure category presence
-    # 36 months of data
     dates = pd.date_range(start='2023-01-01', periods=36, freq='MS')
     np.random.seed(42)
     
@@ -233,4 +295,5 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     # Bind to 0.0.0.0 to accept external requests inside container
     app.run(host='0.0.0.0', port=port, debug=True)
+
 

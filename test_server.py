@@ -46,6 +46,29 @@ class TestSalesForecaster(unittest.TestCase):
         verified_user_wrong = db.verify_user(username, "wrongpassword")
         self.assertIsNone(verified_user_wrong)
 
+    def test_upload_history(self):
+        username = "uploader_" + str(np.random.randint(1000, 9999))
+        password = "SecurePassword123"
+        db.register_user(username, password)
+        user = db.verify_user(username, password)
+        user_id = user['id']
+        
+        # Test empty history
+        uploads = db.get_user_uploads(user_id)
+        self.assertEqual(len(uploads), 0)
+        
+        # Add upload record
+        db.add_upload_record(user_id, "sales_2025.csv")
+        uploads = db.get_user_uploads(user_id)
+        self.assertEqual(len(uploads), 1)
+        self.assertEqual(uploads[0]['filename'], "sales_2025.csv")
+        
+        # Check profile stats
+        stats = db.get_user_stats(user_id)
+        self.assertEqual(stats['total_uploads'], 1)
+        self.assertEqual(stats['username'], username)
+
+
     def test_forecasting_logic(self):
         # Create a mock dataframe
         dates = pd.date_range(start='2024-01-01', periods=12, freq='ME')

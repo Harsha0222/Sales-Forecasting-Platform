@@ -33,6 +33,14 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS uploads (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                filename VARCHAR(255) NOT NULL,
+                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
     else:
         # SQLite Schema
         cursor.execute('''
@@ -41,6 +49,15 @@ def init_db():
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS uploads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                filename TEXT NOT NULL,
+                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         ''')
         
@@ -111,3 +128,83 @@ def verify_user(username, password):
             }
             
     return None
+
+def add_upload_record(user_id, filename):
+    """Log a file upload event."""
+    conn, placeholder = get_db_connection()
+    cursor = conn.cursor()
+    sql = f'INSERT INTO uploads (user_id, filename) VALUES ({placeholder}, {placeholder})'
+    try:
+        cursor.execute(sql, (user_id, filename))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error logging upload record: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_user_uploads(user_id):
+    """Retrieve the upload history of a user, ordered by upload date descending."""
+    conn, placeholder = get_db_connection()
+    cursor = conn.cursor()
+    sql = f'SELECT filename, uploaded_at FROM uploads WHERE user_id = {placeholder} ORDER BY uploaded_at DESC'
+    cursor.execute(sql, (user_id,))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    uploads = []
+    for r in rows:
+        dt_val = r[1]
+        dt_str = dt_val.strftime('%Y-%m-%d %H:%M:%S') if hasattr(dt_val, 'strftime') else str(dt_val)
+        uploads.append({
+            'filename': r[0],
+            'uploaded_at': dt_str
+        })
+    return uploads
+
+def get_user_stats(user_id):
+    """Get profile stats for the user: count of uploads, member since date, and last upload time."""
+    conn, placeholder = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 1. Get member since date and username
+    sql_user = f'SELECT created_at, username FROM users WHERE id = {placeholder}'
+    cursor.execute(sql_user, (user_id,))
+    user_row = cursor.fetchone()
+    
+    # 2. Get total upload count
+    sql_count = f'SELECT COUNT(*) FROM uploads WHERE user_id = {placeholder}'
+    cursor.execute(sql_count, (user_id,))
+    count_row = cursor.fetchone()
+    total_uploads = count_row[0] if count_row else 0
+    
+    # 3. Get last upload time
+    sql_last = f'SELECT MAX(uploaded_at) FROM uploads WHERE user_id = {placeholder}'
+    cursor.execute(sql_last, (user_id,))
+    last_row = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    member_since = "N/A"
+    username = "N/A"
+    if user_row:
+        dt_val = user_row[0]
+        member_since = dt_val.strftime('%Y-%m-%d') if hasattr(dt_val, 'strftime') else str(dt_val)[:10]
+        username = user_row[1]
+        
+    last_upload = "N/A"
+    if last_row and last_row[0]:
+        dt_last = last_row[0]
+        last_upload = dt_last.strftime('%Y-%m-%d %H:%M:%S') if hasattr(dt_last, 'strftime') else str(dt_last)
+        
+    return {
+        'username': username,
+        'member_since': member_since,
+        'total_uploads': total_uploads,
+        'last_upload_at': last_upload
+    }
+

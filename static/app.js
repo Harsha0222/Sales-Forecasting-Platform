@@ -80,9 +80,19 @@ const elements = {
 };
 
 // ==========================================================================
-// 1. Initial Setup and Session Check
+// 1. Initial Setup, Session Check & Theme Loaders
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Load cached theme
+    const savedTheme = localStorage.getItem('theme');
+    const isLight = savedTheme === 'light';
+    if (isLight) {
+        document.body.classList.add('light-theme');
+    } else {
+        document.body.classList.remove('light-theme');
+    }
+    updateThemeIcon(isLight);
+
     checkSession();
     setupEventListeners();
 });
@@ -96,10 +106,13 @@ async function checkSession() {
         if (data.authenticated) {
             loginSession(data.user);
             if (data.current_file) {
+                state.currentFile = data.current_file;
                 elements.activeFileBadge.className = "badge success-badge";
                 elements.activeFileText.textContent = data.current_file;
+                elements.activeFileBadge.classList.remove('hidden');
+                elements.analyticsWorkspace.classList.remove('hidden');
+                elements.btnPrintReport.classList.remove('hidden');
                 
-                // Fetch details of current file to load categories
                 triggerForecast();
             }
         } else {
@@ -112,7 +125,7 @@ async function checkSession() {
 }
 
 // ==========================================================================
-// 2. Authentication Logic
+// 2. Authentication & View Switcher Event Listeners
 // ==========================================================================
 function setupEventListeners() {
     // Auth Panel toggling
@@ -210,6 +223,37 @@ function setupEventListeners() {
         }
     });
 
+    // Navigation subviews router click triggers
+    document.getElementById('nav-home').addEventListener('click', () => switchSubview('home'));
+    document.getElementById('nav-dashboard').addEventListener('click', () => switchSubview('dashboard'));
+    document.getElementById('nav-profile').addEventListener('click', () => switchSubview('profile'));
+    
+    // Sidebar User Profile card shortcut
+    document.getElementById('sidebar-profile-card').addEventListener('click', () => switchSubview('profile'));
+    
+    // Home banner quick shortcuts
+    document.getElementById('btn-goto-forecaster').addEventListener('click', () => switchSubview('dashboard'));
+
+    // Theme Switcher Button
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+        const isLight = document.body.classList.toggle('light-theme');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        updateThemeIcon(isLight);
+        
+        // Redraw chart to dynamically adapt grid/text colors to active theme
+        if (state.forecastData) {
+            renderForecastChart(state.forecastData);
+        }
+    });
+
+    // History select file dropdown trigger
+    document.getElementById('history-file-select').addEventListener('change', (e) => {
+        const selectedFile = e.target.value;
+        if (selectedFile) {
+            loadPastFile(selectedFile);
+        }
+    });
+
     // ================= UPLOAD ZONE EVENT LISTENERS =================
     elements.btnBrowseFiles.addEventListener('click', () => {
         elements.fileInput.click();
@@ -285,8 +329,11 @@ function loginSession(user) {
     elements.sidebarUsername.textContent = user.username;
     elements.userAvatarInitials.textContent = user.username.substring(0, 2).toUpperCase();
     
-    elements.authContainer.classList.add('hidden');
-    elements.dashboardContainer.classList.remove('hidden');
+    elements.authContainer.className = "page-container auth-page hidden";
+    elements.dashboardContainer.className = "page-container dashboard-page";
+    
+    // Switch to Home subview
+    switchSubview('home');
 }
 
 function logoutSession() {
@@ -300,14 +347,14 @@ function logoutSession() {
         state.chartInstance = null;
     }
     
-    elements.activeFileBadge.className = "badge warning-badge";
+    elements.activeFileBadge.className = "badge warning-badge hidden";
     elements.activeFileText.textContent = "No active dataset";
     elements.analyticsWorkspace.classList.add('hidden');
     elements.btnPrintReport.classList.add('hidden');
     elements.controlGroupCategory.classList.add('hidden');
     
-    elements.dashboardContainer.classList.add('hidden');
-    elements.authContainer.classList.remove('hidden');
+    elements.dashboardContainer.className = "page-container dashboard-page hidden";
+    elements.authContainer.className = "page-container auth-page";
     elements.loginPanel.classList.add('active');
     elements.registerPanel.classList.remove('active');
     
@@ -315,6 +362,7 @@ function logoutSession() {
     elements.registerForm.reset();
     evaluatePasswordStrength('');
 }
+
 
 // Password Strength Checker
 function evaluatePasswordStrength(password) {
@@ -556,6 +604,14 @@ function populateInsights(insights) {
 function renderForecastChart(data) {
     const ctx = elements.chartCanvas.getContext('2d');
     
+    // Read the active theme state
+    const isLightTheme = document.body.classList.contains('light-theme');
+    
+    const legendColor = isLightTheme ? '#0f172a' : '#f3f4f6';
+    const tickColor = isLightTheme ? '#334155' : '#9ca3af';
+    const gridColor = isLightTheme ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.05)';
+    const fittedLineColor = isLightTheme ? 'rgba(15, 23, 42, 0.3)' : 'rgba(255, 255, 255, 0.35)';
+    
     const histDates = data.historical.map(h => h.date);
     const forecastDates = data.forecast.map(f => f.date);
     const allLabels = [...histDates, ...forecastDates];
@@ -597,7 +653,7 @@ function renderForecastChart(data) {
                 {
                     label: 'Model Fitted Fit',
                     data: fitted,
-                    borderColor: 'rgba(255, 255, 255, 0.35)',
+                    borderColor: fittedLineColor,
                     borderWidth: 1.5,
                     borderDash: [5, 5],
                     fill: false,
@@ -669,7 +725,7 @@ function renderForecastChart(data) {
                 },
                 legend: {
                     labels: {
-                        color: '#f3f4f6',
+                        color: legendColor,
                         filter: function(item) {
                             return !item.text.includes('CI Lower');
                         }
@@ -693,19 +749,19 @@ function renderForecastChart(data) {
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
+                        color: gridColor
                     },
                     ticks: {
-                        color: '#9ca3af',
+                        color: tickColor,
                         maxTicksLimit: 12
                     }
                 },
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
+                        color: gridColor
                     },
                     ticks: {
-                        color: '#9ca3af',
+                        color: tickColor,
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
@@ -715,6 +771,7 @@ function renderForecastChart(data) {
         }
     });
 }
+
 
 // ==========================================================================
 // 6. Projections Grid (Table View) & Pagination
@@ -842,4 +899,203 @@ window.addEventListener('afterprint', () => {
         state.chartInstance.update('none');
     }
 });
+
+// ==========================================================================
+// 8. Navigation Views Switcher & Profile/History Loaders
+// ==========================================================================
+function switchSubview(viewId) {
+    // Hide all subview panes
+    document.querySelectorAll('.subview-pane').forEach(p => p.classList.add('hidden'));
+    // Show active subview pane
+    const activePane = document.getElementById(`subview-${viewId}`);
+    if (activePane) activePane.classList.remove('hidden');
+    
+    // Update active nav-item class in sidebar
+    document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Highlight sidebar nav selection
+    const navItem = document.getElementById(`nav-${viewId}`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    // Set headers Title / Subtitle dynamically
+    const pageTitle = document.getElementById('page-title-label');
+    const pageSubtitle = document.getElementById('page-subtitle-label');
+    
+    if (viewId === 'home') {
+        pageTitle.textContent = "Home Dashboard";
+        pageSubtitle.textContent = "Welcome to your sales forecasting command center.";
+        elements.btnPrintReport.classList.add('hidden');
+        elements.activeFileBadge.classList.add('hidden');
+        loadHomeData(); // Reload recent uploads and profile stats
+    } else if (viewId === 'dashboard') {
+        pageTitle.textContent = "Sales Forecasting Command Center";
+        pageSubtitle.textContent = "Upload sales datasets, run statistical models, and download accurate projections.";
+        
+        // Show active file badge in Forecaster tab
+        elements.activeFileBadge.classList.remove('hidden');
+        if (state.currentFile) {
+            elements.btnPrintReport.classList.remove('hidden');
+            elements.activeFileBadge.className = "badge success-badge";
+            elements.activeFileText.textContent = state.currentFile;
+        } else {
+            elements.btnPrintReport.classList.add('hidden');
+            elements.activeFileBadge.className = "badge warning-badge";
+            elements.activeFileText.textContent = "No active dataset";
+        }
+        loadHistoryDropdown(); // Populate history select
+    } else if (viewId === 'profile') {
+        pageTitle.textContent = "User Profile Settings";
+        pageSubtitle.textContent = "Manage your database configuration and account credentials.";
+        elements.btnPrintReport.classList.add('hidden');
+        elements.activeFileBadge.classList.add('hidden');
+        loadProfileData(); // Fetch profile details
+    }
+}
+
+async function loadHomeData() {
+    // Set username displays
+    document.querySelectorAll('.username-display').forEach(el => {
+        el.textContent = state.user ? state.user.username : 'User';
+    });
+    
+    try {
+        // Fetch profile stats
+        const profileRes = await fetch('/api/profile');
+        const stats = await profileRes.json();
+        if (profileRes.ok) {
+            document.getElementById('home-stat-uploads').textContent = stats.total_uploads;
+            document.getElementById('home-stat-db').textContent = stats.database_type;
+        }
+        
+        // Fetch upload history list
+        const historyRes = await fetch('/api/uploads');
+        const data = await historyRes.json();
+        if (historyRes.ok) {
+            const listContainer = document.getElementById('home-recent-uploads');
+            listContainer.innerHTML = '';
+            
+            if (data.uploads.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted text-center py-3">No past uploads found.</p>';
+                return;
+            }
+            
+            // Show up to 5 recent uploads
+            listContainer.innerHTML = '';
+            data.uploads.slice(0, 5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--color-primary);"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <strong>${item.filename}</strong>
+                    </div>
+                    <span class="text-muted" style="font-size: 0.8rem;">${item.uploaded_at}</span>
+                `;
+                div.addEventListener('click', () => {
+                    loadPastFile(item.filename);
+                });
+                listContainer.appendChild(div);
+            });
+        }
+    } catch (err) {
+        console.error("Error loading home page statistics:", err);
+    }
+}
+
+async function loadHistoryDropdown() {
+    try {
+        const response = await fetch('/api/uploads');
+        const data = await response.json();
+        if (response.ok) {
+            const select = document.getElementById('history-file-select');
+            select.innerHTML = '<option value="">-- Select a past file --</option>';
+            data.uploads.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.filename;
+                opt.textContent = `${item.filename} (${item.uploaded_at})`;
+                if (state.currentFile === item.filename) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        }
+    } catch (err) {
+        console.error("Failed to load upload history list dropdown:", err);
+    }
+}
+
+async function loadProfileData() {
+    try {
+        const response = await fetch('/api/profile');
+        const stats = await response.json();
+        if (response.ok) {
+            document.getElementById('profile-avatar-big').textContent = stats.username.substring(0, 2).toUpperCase();
+            document.getElementById('profile-username-val').textContent = stats.username;
+            document.getElementById('profile-member-since').textContent = stats.member_since;
+            document.getElementById('profile-stat-db-type').textContent = stats.database_type;
+            document.getElementById('profile-stat-total-uploads').textContent = stats.total_uploads;
+            document.getElementById('profile-stat-last-upload').textContent = stats.last_upload_at;
+        }
+    } catch (err) {
+        console.error("Failed to load profile view statistics:", err);
+    }
+}
+
+async function loadPastFile(filename) {
+    try {
+        elements.uploadProgressContainer.classList.remove('hidden');
+        elements.uploadError.classList.add('hidden');
+        
+        const response = await fetch('/api/uploads/load', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename })
+        });
+        const data = await response.json();
+        
+        elements.uploadProgressContainer.classList.add('hidden');
+        
+        if (response.ok) {
+            state.currentFile = data.filename;
+            
+            // Switch views to Forecaster!
+            switchSubview('dashboard');
+            
+            // Populate category selector
+            populateCategoryFilter(data.summary.categories);
+            
+            // Reveal analytics dashboard UI
+            elements.activeFileBadge.className = "badge success-badge";
+            elements.activeFileText.textContent = data.filename;
+            elements.activeFileBadge.classList.remove('hidden');
+            elements.analyticsWorkspace.classList.remove('hidden');
+            elements.btnPrintReport.classList.remove('hidden');
+            
+            // Trigger initial forecast
+            triggerForecast();
+        } else {
+            showUploadError(data.error || 'Failed to load historical dataset.');
+        }
+    } catch (err) {
+        elements.uploadProgressContainer.classList.add('hidden');
+        showUploadError('Network error loading file from database.');
+    }
+}
+
+function updateThemeIcon(isLight) {
+    const sun = document.querySelector('.theme-icon-sun');
+    const moon = document.querySelector('.theme-icon-moon');
+    if (isLight) {
+        sun.classList.remove('hidden');
+        moon.classList.add('hidden');
+    } else {
+        sun.classList.add('hidden');
+        moon.classList.remove('hidden');
+    }
+}
+
 
